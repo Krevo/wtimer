@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!-- 
+
+  Chrono software for "10 Km de Montluel"
+  by François CREVOLA
+
+-->
+<html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="sprintf.min.js"></script>
+<title>Chrono 10 Km de Montluel</title>
+<link rel="stylesheet" media="screen" href="styles.css" type="text/css"/>
+<link rel="stylesheet" href="css/font-awesome.min.css">
+</head>
+<body>
+
+<div id="sidebar">
+</div>
+
+<div id="content">
+
+  <div id="startTime">00:00:00</div>
+  <div id="timer">0:00:00,0</div>
+
+  <!-- Boutons -->
+  <div id="boutons">
+    <input type="submit" name="boutonStart" id="boutonStart" VALUE="Start" onclick="fonctionStart()" tabindex="-1"/>
+    <input type="submit" name="boutonSplit" id="boutonSplit" VALUE="Split" onclick="fonctionSplit()"/>
+    <input type="submit" name="boutonStop"  id="boutonStop"  VALUE="Stop"  onclick="fonctionStop()" tabindex="-1"/>	
+  </div>
+  <div id="urlDiv" style="margin-top: 25px;">
+    <input id="urlBack" class="" type="text" value="localhost:8080/wtimer">
+    <input type="submit" name="boutonTestConnection" id="boutonTestConnection" value="Test connection" onclick="testConnection()" tabindex="-1">
+  </div>
+</div>
+
+</div>
+
+<!-- code JS -->
+<script src="code.js"></script>
+
+</body>
+</html>
