@@ -5,12 +5,26 @@
 
 var start;
 var timeTab = new Array();
-var audio = new Audio('beep-08b.wav');
+var audio = new Audio('sound/beep-08b.wav');
 var displayInterval, sendDataInterval;
+
+window.onload = function() {
+  // Si ya un starTime ...
+  startTime = localStorage.getItem("startTime");
+  console.log(startTime);
+  if (!!startTime) {
+    start = new Date();
+    start.setTime(startTime);
+    console.log(startTime);
+    fonctionStart(true);
+  }
+}
 
 function getFormatedCurrentTime() {
   var now = new Date();
   var d = new Date();
+  console.log("start.getTime()");
+  console.log(start.getTime());
   d.setTime(now.getTime() - start.getTime());
   var displayStr = sprintf("%01d:%02d:%02d,%d",d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds(),d.getUTCMilliseconds()/100);
   return displayStr;
@@ -48,8 +62,8 @@ function displayTimeTab() {
 }
 
 // start
-function fonctionStart(){
-  fonctionReset();
+function fonctionStart(noReset) {
+  fonctionReset(noReset);
   displayStartTime();
   displayInterval = setInterval(displayTimer,100); // display current timer every 0,1s
   sendDataInterval = setInterval(sendData,15000); // send data to server every 15s
@@ -57,10 +71,13 @@ function fonctionStart(){
 }
 
 // fontion Reset
-function fonctionReset(){
-  clearData();
-  start = new Date();
-  timeTab = new Array();
+function fonctionReset(noReset) {
+  if (!noReset) {
+    clearData();
+    start = new Date();
+    localStorage.setItem("startTime", start.getTime());
+    timeTab = new Array();
+  }
   displayTimeTab();
   saveToLocalStorage();
 }
@@ -82,9 +99,9 @@ function fonctionStop(){
     clearInterval(displayInterval);  
     clearInterval(sendDataInterval);
     sendData();
+    $("#boutonStart").prop('disabled', false);
+    $("#boutonStart").prop('value', 'Re-start');
   }
-  $("#boutonStart").prop('disabled', false);
-  $("#boutonStart").prop('value', 'Re-start');
 }
 
 function saveToLocalStorage() {

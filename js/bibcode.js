@@ -4,7 +4,7 @@
 */
 
 var start, timeTab = new Array();;
-var audio = new Audio('beep-08b.wav');
+var audio = new Audio('sound/beep-08b.wav');
 var displayInterval, sendDataInterval;
 
 $("#bib").keyup(function (e) {
@@ -14,6 +14,7 @@ $("#bib").keyup(function (e) {
 });
 
 displayTimeTab();
+sendData(); // first call the server
 sendDataInterval = setInterval(sendData,15000); // send data to server every 15s
 
 // fontion Valid
@@ -74,11 +75,18 @@ function sendData() {
         if (!!receivedTimeTab[i].time) {
           timeTab[i].time = receivedTimeTab[i].time;
         }
+        if (!!receivedTimeTab[i].bib) {
+          timeTab[i].bib = receivedTimeTab[i].bib;
+        }
       } else {
-        timeTab.push({
-          time: receivedTimeTab[i].time
-        });
-      }
+        timeTab.push({});
+        if (!!receivedTimeTab[i].time) {
+          timeTab[i].time = receivedTimeTab[i].time;
+        }
+        if (!!receivedTimeTab[i].bib) {
+          timeTab[i].bib = receivedTimeTab[i].bib;
+        }
+     }
     }
     displayTimeTab();
     saveToLocalStorage();
