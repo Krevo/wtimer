@@ -16,6 +16,7 @@
   
   $timetab = json_decode(file_get_contents("time.data"), true);
   $bibtab = json_decode(file_get_contents("bib.data"), true);
+  $coureurs = json_decode(file_get_contents("coureurs.data"), true);
 
   // Association temps <-> numéro de dossard
   $b = 0;
@@ -25,6 +26,10 @@
     }
     if (isset($bibtab[$b]['bib'])) {
       $item['bib'] = $bibtab[$b++]['bib'];
+      if (isset($coureurs[$item['bib']])) {
+        $item['nom'] = ucfirst(strtolower($coureurs[$item['bib']]['Prenom'])).' '.strtoupper($coureurs[$item['bib']]['Nom']);
+        $item['cat'] = $coureurs[$item['bib']]['categorie'];
+      }
     }
   }
   

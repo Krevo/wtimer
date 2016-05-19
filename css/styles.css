@@ -78,6 +78,17 @@ body {
   font-weight: bold;
 }
 
+.statusBar {
+    margin-top: 10px
+}
+
+.footer {
+    position: fixed;
+    bottom: 10px;
+    text-align: center;
+    width: 100%;
+}
+
 table {
     border-collapse: separate;
     border-spacing: 0;

@@ -9,22 +9,24 @@ var audio = new Audio('sound/beep-08b.wav');
 var displayInterval, sendDataInterval;
 
 window.onload = function() {
-  // Si ya un starTime ...
+  // Si ya un startTime ...
   startTime = localStorage.getItem("startTime");
   console.log(startTime);
+  timeTab = JSON.parse(localStorage.getItem("timeTab"));
+  console.log(timeTab);
   if (!!startTime) {
-    start = new Date();
-    start.setTime(startTime);
-    console.log(startTime);
-    fonctionStart(true);
+    if (confirm("Chronométrage en cours détecté, voulez-vous le poursuivre ?")) {
+      start = new Date();
+      start.setTime(startTime);
+      console.log(startTime);
+      fonctionStart(true);
+    }
   }
 }
 
 function getFormatedCurrentTime() {
   var now = new Date();
   var d = new Date();
-  console.log("start.getTime()");
-  console.log(start.getTime());
   d.setTime(now.getTime() - start.getTime());
   var displayStr = sprintf("%01d:%02d:%02d,%d",d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds(),d.getUTCMilliseconds()/100);
   return displayStr;
@@ -55,7 +57,10 @@ function displayTimeTab() {
   content += '<tbody>  ';
   for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
     //content += sprintf('<div class="editable">%2d.&nbsp;&nbsp;%s&nbsp;&nbsp;xxx&nbsp;<i class="fa fa-pencil"></i></div>\n',i+1,timeTab[i]);;   
-    content += sprintf('<tr><td>%2d</td><td class="editable">%s <i class="fa fa-pencil"></i></td><td>%s</td><td></td><td></td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',(!!timeTab[i].bib)?timeTab[i].bib:'xxx');   
+    content += sprintf('<tr><td>%2d</td><td class="editable">%s <i class="fa fa-pencil"></i></td><td>%s</td><td>%s</td><td>%s</td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cat)?timeTab[i].cat:'');
+    console.log(timeTab[i].nom);
+    console.log(timeTab[i].cat);
+    console.log(timeTab[i]);
   }
   content += '</tbody></table>';
   $("#sidebar").html(content);
@@ -66,7 +71,7 @@ function fonctionStart(noReset) {
   fonctionReset(noReset);
   displayStartTime();
   displayInterval = setInterval(displayTimer,100); // display current timer every 0,1s
-  sendDataInterval = setInterval(sendData,15000); // send data to server every 15s
+  sendDataInterval = setInterval(sendData,5000); // send data to server every 5s
   $("#boutonStart").prop('disabled', true);
 }
 
@@ -129,15 +134,24 @@ function testConnection() {
 }
 
 function sendData() {
+  var sendTime = new Date();
+  $("#status" ).html("Données envoyées à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
   $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(timeTab)}, function( data ) {
-    $("#status" ).html( data );
+    sendTime = new Date();
+    $("#status" ).html("Données reçues à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
     receivedTimeTab = $.parseJSON(data);
-    for (var i = 0; i < receivedTimeTab.length; i++) {
+    for (var i = 0; i < receivedTimeTab.length; i++) { // On recup les numDossard, Nom et catégorie renvoyés par le serveur
       if (i==timeTab.length) { // On s'arrête si receivedTimeTab est plus grand ... (ce qui serait très étonnant !!)
         break; 
       }
       if (!!receivedTimeTab[i].bib) {
         timeTab[i].bib = receivedTimeTab[i].bib;
+      }
+      if (!!receivedTimeTab[i].nom) {
+        timeTab[i].nom = receivedTimeTab[i].nom;
+      }
+      if (!!receivedTimeTab[i].cat) {
+        timeTab[i].cat = receivedTimeTab[i].cat;
       }
     }
     displayTimeTab();
