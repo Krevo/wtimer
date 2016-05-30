@@ -4,7 +4,7 @@
     touch("bib.data");
   }
 
-  if (!file_exists("bib.data")) {
+  if (!file_exists("time.data")) {
     touch("time.data");
   }
 
@@ -29,6 +29,19 @@
       if (isset($coureurs[$item['bib']])) {
         $item['nom'] = ucfirst(strtolower($coureurs[$item['bib']]['Prenom'])).' '.strtoupper($coureurs[$item['bib']]['Nom']);
         $item['cat'] = $coureurs[$item['bib']]['categorie'];
+        $item['distance'] = $coureurs[$item['bib']]['Distance'];
+        $sex = substr($item['cat'], 2, 1).$item['distance'];
+        if (!isset($cltsex[$sex])) {
+          $cltsex[$sex] = 0;
+        }
+        $cltsex[$sex]++;
+        $item['cltsex'] = $cltsex[$sex];
+        $cat = $item['cat'].$item['distance'];
+        if (!isset($cltcat[$cat])) {
+          $cltcat[$cat] = 0;
+        }
+        $cltcat[$cat]++;
+        $item['cltcat'] = $cltcat[$cat];
       }
     }
   }

@@ -78,6 +78,25 @@ body {
   font-weight: bold;
 }
 
+.removable i {
+  display: none;
+}
+
+.removable:hover i {
+  font-size: 0.8em;
+  color: red;
+  display: inline;
+  position: relative;
+  top: -4px;
+  left: 4px:
+}
+
+.removable:hover {
+  padding:  5px 0px;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
 .statusBar {
     margin-top: 10px
 }

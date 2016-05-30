@@ -52,18 +52,27 @@ function displayTimeTab() {
   content += '<th>N° dossard</th>';
   content += '<th>Nom</th>';
   content += '<th>Cat</th>';
+  content += '<th>Distance</th>';  
   content += '</tr>';
   content += '</thead>';
   content += '<tbody>  ';
   for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
     //content += sprintf('<div class="editable">%2d.&nbsp;&nbsp;%s&nbsp;&nbsp;xxx&nbsp;<i class="fa fa-pencil"></i></div>\n',i+1,timeTab[i]);;   
-    content += sprintf('<tr><td>%2d</td><td class="editable">%s <i class="fa fa-pencil"></i></td><td>%s</td><td>%s</td><td>%s</td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cat)?timeTab[i].cat:'');
+    content += sprintf('<tr><td>%2d</td><td class="removable" onclick="removeTime(%s);">%s <i class="fa fa-trash"></i></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n',i+1,i,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].distance)?timeTab[i].distance:'');
     console.log(timeTab[i].nom);
     console.log(timeTab[i].cat);
     console.log(timeTab[i]);
   }
   content += '</tbody></table>';
   $("#sidebar").html(content);
+}
+
+function removeTime(item_number) {
+  console.log("Want to remove item number "+item_number);
+  log("DEL "+timeTab[item_number].time);
+  timeTab.splice(item_number, 1);
+  displayTimeTab();
+  sendData();
 }
 
 // start
@@ -90,9 +99,11 @@ function fonctionReset(noReset) {
 // fontion Split
 function fonctionSplit(){
   audio.play();
+  var readVal = getFormatedCurrentTime();
   timeTab.push({
-    time: getFormatedCurrentTime()
+    time: readVal
   });
+  log('ADD '+readVal);
   console.log(timeTab);
   displayTimeTab();
   saveToLocalStorage();
@@ -133,10 +144,20 @@ function testConnection() {
     });
 }
 
+function log(readVal) {
+  $.post("http://"+getBackUrl()+"/log.php", {"log": readVal});
+}
+
 function sendData() {
   var sendTime = new Date();
   $("#status" ).html("Données envoyées à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
-  $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(timeTab)}, function( data ) {
+  var onlyTimeTab = [];
+  for (var i = 0; i < timeTab.length; i++) {
+    onlyTimeTab.push({
+      time: timeTab[i].time
+    });
+  }
+  $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(onlyTimeTab)}, function( data ) {
     sendTime = new Date();
     $("#status" ).html("Données reçues à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
     receivedTimeTab = $.parseJSON(data);
@@ -152,6 +173,9 @@ function sendData() {
       }
       if (!!receivedTimeTab[i].cat) {
         timeTab[i].cat = receivedTimeTab[i].cat;
+      }
+      if (!!receivedTimeTab[i].distance) {
+        timeTab[i].distance = receivedTimeTab[i].distance;
       }
     }
     displayTimeTab();
