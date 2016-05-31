@@ -18,7 +18,7 @@ function displayTimeTab(dist) {
   //content += '<th>Cat</th>';
   content += '<th>Clt. cat</th>';
   content += '<th>Clt. sex</th>';
-  content += '<th>Distance</th>';
+  content += '<th>Club</th>';
   content += '</tr>';
   content += '</thead>';
   content += '<tbody>  ';
@@ -26,7 +26,7 @@ function displayTimeTab(dist) {
   for (var i = 0; i < timeTab.length; i++) {
     if (!!timeTab[i].distance && timeTab[i].distance==dist) {
       rank++;
-      content += sprintf('<tr><td>%d</td><td>%s</td><td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%s</td></tr>\n',rank,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].distance)?timeTab[i].distance:'');
+      content += sprintf('<tr><td>%d</td><td>%s</td><td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%s</td></tr>\n',rank,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].club)?timeTab[i].club:'');
     }
   }
   content += '</tbody></table>';
@@ -62,6 +62,9 @@ function readData(dist) {
       }
       if (!!receivedTimeTab[i].cltcat) {
         timeTab[i].cltcat = receivedTimeTab[i].cltcat;
+      }
+      if (!!receivedTimeTab[i].club) {
+        timeTab[i].club = receivedTimeTab[i].club;
       }
     }
     displayTimeTab(dist);

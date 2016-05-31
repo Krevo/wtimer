@@ -30,6 +30,8 @@
         $item['nom'] = ucfirst(strtolower($coureurs[$item['bib']]['Prenom'])).' '.strtoupper($coureurs[$item['bib']]['Nom']);
         $item['cat'] = $coureurs[$item['bib']]['categorie'];
         $item['distance'] = $coureurs[$item['bib']]['Distance'];
+        $item['club'] = $coureurs[$item['bib']]['Club'];
+
         $sex = substr($item['cat'], 2, 1).$item['distance'];
         if (!isset($cltsex[$sex])) {
           $cltsex[$sex] = 0;
