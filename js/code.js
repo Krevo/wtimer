@@ -176,38 +176,11 @@ function getCoureurs() {
 function sendData() {
   var sendTime = new Date();
   $("#status" ).html("Données envoyées à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
-/*
-  var onlyTimeTab = [];
-  for (var i = 0; i < timeTab.length; i++) {
-    onlyTimeTab.push({
-      time: timeTab[i].time
-    });
-  }
-*/
   $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(timeTab)}, function( data ) {
     sendTime = new Date();
     $("#status" ).html("Données reçues à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
     receivedData = $.parseJSON(data);
     bibTab = receivedData.bibtab;
-    /*
-    for (var i = 0; i < receivedTimeTab.length; i++) { // On recup les numDossard, Nom et catégorie renvoyés par le serveur
-      if (i==timeTab.length) { // On s'arrête si receivedTimeTab est plus grand ... (ce qui serait très étonnant !!)
-        break; 
-      }
-      if (!!receivedTimeTab[i].bib) {
-        timeTab[i].bib = receivedTimeTab[i].bib;
-      }
-      if (!!receivedTimeTab[i].nom) {
-        timeTab[i].nom = receivedTimeTab[i].nom;
-      }
-      if (!!receivedTimeTab[i].cat) {
-        timeTab[i].cat = receivedTimeTab[i].cat;
-      }
-      if (!!receivedTimeTab[i].distance) {
-        timeTab[i].distance = receivedTimeTab[i].distance;
-      }
-    }
-    */
     displayTimeTab();
     saveToLocalStorage();
   });
