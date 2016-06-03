@@ -3,7 +3,10 @@
 
 */
 
-var start, timeTab = new Array();
+var start;
+var timeTab = new Array();
+var bibTab = new Array();
+var coureurs = null;
 var audio = new Audio('sound/beep-08b.wav');
 var displayInterval, sendDataInterval;
 var paused = false;
@@ -14,24 +17,34 @@ $("#bib").keyup(function (e) {
     }
 });
 
-displayTimeTab();
-sendData(); // first call the server
-sendDataInterval = setInterval(sendData,5000); // send data to server every 15s
+window.onload = function() {
+  data = localStorage.getItem("bibTab");
+  if (!!data) {
+    if (confirm("Liste de dossards détecté, voulez-vous la reprendre ?")) {
+      bibTab = JSON.parse(data);
+    }
+  }
+
+  displayTimeTab();
+  sendData(); // first call the server
+  sendDataInterval = setInterval(sendData,5000); // send data to server every 15s
+
+}
 
 // fontion Valid
 function fonctionValid() {
     audio.play();
 
     var readVal = $("#bib").val();
-    for (var i = 0; i < timeTab.length; i++) {
-      if (!timeTab[i].bib) {
-        timeTab[i].bib = readVal;
+    for (var i = 0; i < bibTab.length; i++) {
+      if (!bibTab[i].bib) {
+        bibTab[i].bib = readVal;
         break;
       }
     }
     
-    if (i==timeTab.length) {
-      timeTab.push({
+    if (i==bibTab.length) {
+      bibTab.push({
         bib: readVal
       });
     }
@@ -46,6 +59,9 @@ function fonctionValid() {
 function displayTimeTab() {
   var content = "";
   var nbToDisplay = 25;
+  if (!coureurs) {
+    getCoureurs();
+  }
   startIndex = Math.max(0, timeTab.length - nbToDisplay);
   content += '<table id="tab">';
   content += '<thead>';
@@ -62,7 +78,30 @@ function displayTimeTab() {
   content += '</thead>';
   content += '<tbody>  ';
   for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
-    content += sprintf('<tr><td>%d</td><td>%s</td><td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%s</td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].distance)?timeTab[i].distance:'');
+    //content += sprintf('<tr><td>%d</td><td>%s</td><td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%s</td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].distance)?timeTab[i].distance:'');
+    var bib = (!!bibTab[i])?bibTab[i].bib:'xxx';
+    var nom = '';
+    var cat = '';
+    var distance = '';
+    var cltsex = '';
+    var cltcat = '';
+    var sexe = '';
+    if (bib != 'xxx' && !!coureurs && !!coureurs[bib]) {
+      nom = coureurs[bib].Prenom.capitalizeFirstLetter() +' '+coureurs[bib].Nom.toUpperCase();
+      cat = coureurs[bib].categorie;
+      distance = coureurs[bib].Distance;
+      sexe = cat.substr(2, 1);
+    }
+    content += '<tr>';
+// i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].distance)?timeTab[i].distance:'');
+    content += sprintf('<td>%d</td>', i+1);
+    content += sprintf('<td>%s</td>', (!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x');
+    content += sprintf('<td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td>', i, i, bib);
+    content += sprintf('<td>%s</td>', nom);
+    content += sprintf('<td>%s (%s)</td>', cltcat, cat);
+    content += sprintf('<td>%s (%s)</td>', cltsex, sexe);
+    content += sprintf('<td>%s</td>', distance);
+    content += '</tr>\n';
   }
   content += '</tbody></table>';
   $("#sidebar").html(content);
@@ -71,7 +110,7 @@ function displayTimeTab() {
 function editTime(item_number) {
   //var initialContent = $("#bib_"+item_number).html();
   paused = true;
-  var editValue = (!!timeTab[item_number].bib)?timeTab[item_number].bib:'xxx';
+  var editValue = (!!bibTab[item_number].bib)?bibTab[item_number].bib:'xxx';
   $("#bib_"+item_number).removeAttr('onclick');
   $("#bib_"+item_number).html('<form id="editForm"><input id="editInput" type=text" size="3" value="'+editValue+'"></form>');
   $("#editInput").focus();
@@ -85,7 +124,7 @@ function editTime(item_number) {
         //$("#editForm").submit();
         $("#bib_"+item_number).html(newValue+'&nbsp;<i class="fa fa-pencil"></i>');
         $("#bib_"+item_number).attr('onclick', 'editTime('+item_number+')');
-        timeTab[item_number].bib = newValue;
+        bibTab[item_number].bib = newValue;
         console.log(editValue+' -> '+newValue);
         log('MV '+editValue+' '+newValue);
         paused = false;
@@ -94,7 +133,7 @@ function editTime(item_number) {
 }
 
 function saveToLocalStorage() {
-  localStorage.setItem("bibTab", JSON.stringify(timeTab));
+  localStorage.setItem("bibTab", JSON.stringify(bibTab));
 }
 
 function getBackUrl() {
@@ -114,13 +153,21 @@ function testConnection() {
 }
 
 function log(readVal) {
-  $.post("http://"+getBackUrl()+"/log.php", {"log": readVal});
+  //$.post("http://"+getBackUrl()+"/log.php", {"log": readVal}); // log distant
+  $.post("log.php", {"log": readVal}); // log en local
+}
+
+function getCoureurs() {
+  $.get("coureurs.data", function( data ) {
+    coureurs = $.parseJSON(data);
+  });
 }
 
 function sendData() {
   if (paused) return;
   var sendTime = new Date();
   $("#status" ).html("Données envoyées à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
+/*
   var onlyBibTab = [];
   for (var i = 0; i < timeTab.length; i++) {
     if (!!timeTab[i].bib) {
@@ -129,10 +176,13 @@ function sendData() {
       });
     }
   }
-  $.post("http://"+getBackUrl()+"/timereceiver.php", {"bibtab": JSON.stringify(onlyBibTab)}, function( data ) {
+*/
+  $.post("http://"+getBackUrl()+"/timereceiver.php", {"bibtab": JSON.stringify(bibTab)}, function( data ) {
     sendTime = new Date();
     $("#status" ).html("Données reçues à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
-    receivedTimeTab = $.parseJSON(data);
+    receivedData = $.parseJSON(data);
+    timeTab = receivedData.timetab;
+    /*
     for (var i = 0; i < receivedTimeTab.length; i++) {
       if (i>=timeTab.length) {
         timeTab.push({});
@@ -159,7 +209,12 @@ function sendData() {
         timeTab[i].cltcat = receivedTimeTab[i].cltcat;
       }
     }
+    */
     displayTimeTab();
     saveToLocalStorage();
   });
+}
+
+String.prototype.capitalizeFirstLetter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
 }

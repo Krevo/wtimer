@@ -4,9 +4,14 @@
 */
 
 var timeTab = new Array();
+var bibTab = new Array();
+var coureurs = null;
 
 function displayTimeTab(dist) {
   console.log("doit afficher le classement du "+dist+" km");
+  if (!coureurs) {
+    getCoureurs(dist);
+  }
   var content = "";
   content += '<table id="tab">';
   content += '<thead>';
@@ -15,7 +20,6 @@ function displayTimeTab(dist) {
   content += '<th>Temps</th>';
   content += '<th>N° dossard</th>';
   content += '<th>Nom</th>';
-  //content += '<th>Cat</th>';
   content += '<th>Clt. cat</th>';
   content += '<th>Clt. sex</th>';
   content += '<th>Club</th>';
@@ -23,6 +27,7 @@ function displayTimeTab(dist) {
   content += '</thead>';
   content += '<tbody>  ';
   var rank = 0;
+  /*
   for (var i = 0; i < timeTab.length; i++) {
     if (!!timeTab[i].distance && timeTab[i].distance==dist) {
       rank++;
@@ -30,14 +35,76 @@ function displayTimeTab(dist) {
     }
   }
   content += '</tbody></table>';
+  */
+  var cltsextab = [];
+  var cltcattab = [];
+
+  for (var i = 0; i < timeTab.length; i++) {
+    console.log("i = "+i);
+    rank++;
+    console.log("rank = "+rank);
+    //content += sprintf('<tr><td>%d</td><td>%s</td><td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%s</td></tr>\n',i+1,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',i,i,(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cltcat)?timeTab[i].cltcat:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].cltsex)?timeTab[i].cltsex:'',(!!timeTab[i].cat)?timeTab[i].cat.substr(2,1):'',(!!timeTab[i].distance)?timeTab[i].distance:'');
+    var bib = (!!bibTab[i]) ? bibTab[i].bib : 'xxx';
+    var nom = '';
+    var cat = '';
+    var distance = '';
+    var cltsex = '';
+    var cltcat = '';
+    var sexe = '';
+    var club = '';
+    if (bib != 'xxx' && !!coureurs && !!coureurs[bib]) {
+      nom = coureurs[bib].Prenom.capitalizeFirstLetter() +' '+coureurs[bib].Nom.toUpperCase();
+      cat = coureurs[bib].categorie;
+      distance = coureurs[bib].Distance;
+      club = coureurs[bib].Club;
+      sexe = cat.substr(2, 1);
+      var sexdist = sexe + distance;
+      if (!cltsextab[sexdist]) {
+        cltsextab[sexdist] = 0;
+      }
+      cltsextab[sexdist]++;
+      var cltsex = cltsextab[sexdist];
+      var catdist = cat + distance;
+      if (!cltcattab[catdist]) {
+        cltcattab[catdist] = 0;
+      }
+      cltcattab[catdist]++;
+      var cltcat = cltcattab[catdist];
+
+    }
+    if (distance == dist) {
+      content += '<tr>';
+      content += sprintf('<td>%d</td>', rank);
+      content += sprintf('<td>%s</td>', (!!timeTab[i].time) ? timeTab[i].time : 'x:xx:xx,x');
+      content += sprintf('<td>%s</td>', bib);
+      content += sprintf('<td>%s</td>', nom);
+      content += sprintf('<td>%s (%s)</td>', cltcat, cat);
+      content += sprintf('<td>%s (%s)</td>', cltsex, sexe);
+      content += sprintf('<td>%s</td>', club);
+      content += '</tr>\n';
+    }
+  }
   $("#sidebar").html(content);
 }
 
-function readData(dist) {
+function getCoureurs(dist) {
+  console.log("getCoureur");
+  $.get("coureurs.data", function( data ) {
+    coureurs = $.parseJSON(data);
+    console.log("getCoureur received");
+    displayTimeTab(dist);
+  });
+}
 
+function readData(dist) {
   $.get("timereceiver.php", function( data ) {
 
-  receivedTimeTab = $.parseJSON(data);
+    receivedData = $.parseJSON(data);
+    bibTab = receivedData.bibtab;
+    timeTab = receivedData.timetab;
+    console.log(bibTab);
+    console.log(timeTab);
+/*
     for (var i = 0; i < receivedTimeTab.length; i++) {
       if (i>=timeTab.length) {
         timeTab.push({});
@@ -67,6 +134,12 @@ function readData(dist) {
         timeTab[i].club = receivedTimeTab[i].club;
       }
     }
+*/
+    console.log("received");
     displayTimeTab(dist);
   });
+}
+
+String.prototype.capitalizeFirstLetter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
 }

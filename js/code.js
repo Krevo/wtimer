@@ -5,6 +5,8 @@
 
 var start;
 var timeTab = new Array();
+var bibTab = new Array();
+var coureurs = null;
 var audio = new Audio('sound/beep-08b.wav');
 var displayInterval, sendDataInterval;
 
@@ -43,6 +45,9 @@ function displayTimer() {
 function displayTimeTab() {
   var content = "";
   var nbToDisplay = 25;
+  if (!coureurs) {
+    getCoureurs();
+  }
   startIndex = Math.max(0, timeTab.length - nbToDisplay);
   content += '<table id="tab">';
   content += '<thead>';
@@ -57,11 +62,23 @@ function displayTimeTab() {
   content += '</thead>';
   content += '<tbody>  ';
   for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
-    //content += sprintf('<div class="editable">%2d.&nbsp;&nbsp;%s&nbsp;&nbsp;xxx&nbsp;<i class="fa fa-pencil"></i></div>\n',i+1,timeTab[i]);;   
-    content += sprintf('<tr><td>%2d</td><td class="removable" onclick="removeTime(%s);">%s <i class="fa fa-trash"></i></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n',i+1,i,(!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x',(!!timeTab[i].bib)?timeTab[i].bib:'xxx',(!!timeTab[i].nom)?timeTab[i].nom:'',(!!timeTab[i].cat)?timeTab[i].cat:'',(!!timeTab[i].distance)?timeTab[i].distance:'');
-    console.log(timeTab[i].nom);
-    console.log(timeTab[i].cat);
-    console.log(timeTab[i]);
+    var bib = (!!bibTab[i])?bibTab[i].bib:'xxx';
+    var nom = '';
+    var cat = '';
+    var distance = '';
+    if (bib != 'xxx' && !!coureurs && !!coureurs[bib]) {
+      nom = coureurs[bib].Prenom.capitalizeFirstLetter() +' '+coureurs[bib].Nom.toUpperCase();
+      cat = coureurs[bib].categorie;
+      distance = coureurs[bib].Distance;
+    }
+    content += '<tr>';
+    content += sprintf('<td>%2d</td>', i+1);
+    content += sprintf('<td class="removable" onclick="removeTime(%s);">%s <i class="fa fa-trash"></i></td>', i, (!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x');
+    content += sprintf('<td>%s</td>', bib);
+    content += sprintf('<td>%s</td>', nom);
+    content += sprintf('<td>%s</td>', cat);
+    content += sprintf('<td>%s</td>', distance);
+    content += '</tr>\n';
   }
   content += '</tbody></table>';
   $("#sidebar").html(content);
@@ -131,6 +148,7 @@ function clearData() {
 function getBackUrl() {
   return $("#urlBack").val();
 }
+
 function testConnection() {
   var urlBack = getBackUrl();
   $.get("http://"+urlBack+"/ping.php")
@@ -145,22 +163,33 @@ function testConnection() {
 }
 
 function log(readVal) {
-  $.post("http://"+getBackUrl()+"/log.php", {"log": readVal});
+  //$.post("http://"+getBackUrl()+"/log.php", {"log": readVal}); // log distant
+  $.post("log.php", {"log": readVal}); // log en local
+}
+
+function getCoureurs() {
+  $.get("coureurs.data", function( data ) {
+    coureurs = $.parseJSON(data);
+  });
 }
 
 function sendData() {
   var sendTime = new Date();
   $("#status" ).html("Données envoyées à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
+/*
   var onlyTimeTab = [];
   for (var i = 0; i < timeTab.length; i++) {
     onlyTimeTab.push({
       time: timeTab[i].time
     });
   }
-  $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(onlyTimeTab)}, function( data ) {
+*/
+  $.post("http://"+getBackUrl()+"/timereceiver.php", {"timetab": JSON.stringify(timeTab)}, function( data ) {
     sendTime = new Date();
     $("#status" ).html("Données reçues à "+sprintf("%01d:%02d:%02d",sendTime.getHours(),sendTime.getMinutes(),sendTime.getSeconds()));
-    receivedTimeTab = $.parseJSON(data);
+    receivedData = $.parseJSON(data);
+    bibTab = receivedData.bibtab;
+    /*
     for (var i = 0; i < receivedTimeTab.length; i++) { // On recup les numDossard, Nom et catégorie renvoyés par le serveur
       if (i==timeTab.length) { // On s'arrête si receivedTimeTab est plus grand ... (ce qui serait très étonnant !!)
         break; 
@@ -178,7 +207,12 @@ function sendData() {
         timeTab[i].distance = receivedTimeTab[i].distance;
       }
     }
+    */
     displayTimeTab();
     saveToLocalStorage();
   });
+}
+
+String.prototype.capitalizeFirstLetter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
 }

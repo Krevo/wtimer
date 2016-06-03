@@ -16,9 +16,10 @@
   
   $timetab = json_decode(file_get_contents("time.data"), true);
   $bibtab = json_decode(file_get_contents("bib.data"), true);
-  $coureurs = json_decode(file_get_contents("coureurs.data"), true);
+  //$coureurs = json_decode(file_get_contents("coureurs.data"), true);
 
   // Association temps <-> numéro de dossard
+  /*
   $b = 0;
   foreach($timetab as &$item) {
     if (!isset($bibtab[$b])) {
@@ -47,10 +48,12 @@
       }
     }
   }
-  
+  */
+
+  $res = ["timetab" => $timetab, "bibtab" => $bibtab];
   //var_dump($bibtab);
   //var_dump($timetab);  
   
   //echo "OK";
 
-  echo json_encode($timetab);
+  echo json_encode($res);
