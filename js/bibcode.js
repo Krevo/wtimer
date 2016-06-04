@@ -76,7 +76,12 @@ function displayTimeTab() {
   content += '</tr>';
   content += '</thead>';
   content += '<tbody>  ';
-  for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
+  var cltsextab = [];
+  var cltcattab = [];
+
+  stopIndex = Math.min(timeTab.length, startIndex + nbToDisplay);
+  for (var i = 0; i < timeTab.length; i++) {
+  //for (var i = startIndex; i < Math.min(timeTab.length, startIndex + nbToDisplay); i++) {
     var bib = (!!bibTab[i])?bibTab[i].bib:'xxx';
     var nom = '';
     var cat = '';
@@ -89,16 +94,35 @@ function displayTimeTab() {
       cat = coureurs[bib].categorie;
       distance = coureurs[bib].Distance;
       sexe = cat.substr(2, 1);
+      
+      // class. par rapport au sexe
+      var sexdist = sexe + distance;
+      if (!cltsextab[sexdist]) {
+        cltsextab[sexdist] = 0;
+      }
+      cltsextab[sexdist]++;
+      cltsex = cltsextab[sexdist];
+
+      // class. par rapport à la catégorie
+      var catdist = cat + distance;
+      if (!cltcattab[catdist]) {
+        cltcattab[catdist] = 0;
+      }
+      cltcattab[catdist]++;
+      cltcat = cltcattab[catdist];
     }
-    content += '<tr>';
-    content += sprintf('<td>%d</td>', i+1);
-    content += sprintf('<td>%s</td>', (!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x');
-    content += sprintf('<td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td>', i, i, bib);
-    content += sprintf('<td>%s</td>', nom);
-    content += sprintf('<td>%s (%s)</td>', cltcat, cat);
-    content += sprintf('<td>%s (%s)</td>', cltsex, sexe);
-    content += sprintf('<td>%s</td>', distance);
-    content += '</tr>\n';
+    
+    if (i>=startIndex && i<stopIndex) {
+      content += '<tr>';
+      content += sprintf('<td>%d</td>', i+1);
+      content += sprintf('<td>%s</td>', (!!timeTab[i].time)?timeTab[i].time:'x:xx:xx,x');
+      content += sprintf('<td class="editable" id="bib_%d" onclick="editTime(%d);">%s&nbsp;<i class="fa fa-pencil"></i></td>', i, i, bib);
+      content += sprintf('<td>%s</td>', nom);
+      content += sprintf('<td>%s (%s)</td>', cltcat, cat);
+      content += sprintf('<td>%s (%s)</td>', cltsex, sexe);
+      content += sprintf('<td>%s</td>', distance);
+      content += '</tr>\n';
+    }
   }
   content += '</tbody></table>';
   $("#sidebar").html(content);

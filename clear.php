@@ -1,5 +1,6 @@
 <?php
-
+  header("Access-Control-Allow-Origin: *");
+  
   $timestamp = date("Ymd_His");
   $filenames = ["wtimer.log", "bib.data", "time.data"];
 

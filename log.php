@@ -1,5 +1,6 @@
 <?php
-
+  header("Access-Control-Allow-Origin: *");
+  
   if (!file_exists("wtimer.log")) {
     touch("wtimer.log");
   }

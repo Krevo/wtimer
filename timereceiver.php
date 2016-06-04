@@ -1,5 +1,6 @@
 <?php
-
+  header("Access-Control-Allow-Origin: *");
+  
   if (!file_exists("bib.data")) {
     touch("bib.data");
   }
