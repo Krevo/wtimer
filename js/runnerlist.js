@@ -32,7 +32,6 @@ function displayTimeTab(dist) {
 
   for (var i = 0; i < timeTab.length; i++) {
     console.log("i = "+i);
-    rank++;
     var bib = (!!bibTab[i]) ? bibTab[i].bib : 'xxx';
     var nom = '';
     var cat = '';
@@ -62,6 +61,7 @@ function displayTimeTab(dist) {
 
     }
     if (distance == dist) {
+      rank++;
       content += '<tr>';
       content += sprintf('<td>%d</td>', rank);
       content += sprintf('<td>%s</td>', (!!timeTab[i].time) ? timeTab[i].time : 'x:xx:xx,x');
